@@ -94,18 +94,21 @@ class Plugin::Instance
 
   def add_to_serializer(serializer, attr, define_include_method = true, &block)
     reloadable_patch do |plugin|
-      klass = "#{serializer.to_s.classify}Serializer".constantize rescue "#{serializer.to_s}Serializer".constantize
+      base = "#{serializer.to_s.classify}Serializer".constantize rescue "#{serializer.to_s}Serializer".constantize
 
-      unless attr.to_s.start_with?("include_")
-        klass.attributes(attr)
+      # we have to work through descendants cause serializers may already be baked and cached
+      ([base] + base.descendants).each do |klass|
+        unless attr.to_s.start_with?("include_")
+          klass.attributes(attr)
 
-        if define_include_method
-          # Don't include serialized methods if the plugin is disabled
-          klass.public_send(:define_method, "include_#{attr}?") { plugin.enabled? }
+          if define_include_method
+            # Don't include serialized methods if the plugin is disabled
+            klass.public_send(:define_method, "include_#{attr}?") { plugin.enabled? }
+          end
         end
-      end
 
-      klass.public_send(:define_method, attr, &block)
+        klass.public_send(:define_method, attr, &block)
+      end
     end
   end
 
@@ -431,7 +434,7 @@ class Plugin::Instance
       full_path = File.dirname(path) << "/assets/" << file
     end
 
-    assets << [full_path, opts]
+    assets << [full_path, opts, directory_name]
   end
 
   def register_service_worker(file, opts = nil)
@@ -654,8 +657,12 @@ class Plugin::Instance
     end
   end
 
-  def asset_name
-    @asset_name ||= File.dirname(path).split("/").last
+  def directory_name
+    @directory_name ||= File.dirname(path).split("/").last
+  end
+
+  def css_asset_exists?(target = nil)
+    DiscoursePluginRegistry.stylesheets_exists?(directory_name, target)
   end
 
   def js_asset_exists?
@@ -669,12 +676,12 @@ class Plugin::Instance
   end
 
   def js_file_path
-    @file_path ||= "#{Plugin::Instance.js_path}/#{asset_name}.js.erb"
+    @file_path ||= "#{Plugin::Instance.js_path}/#{directory_name}.js.erb"
   end
 
   def register_assets!
-    assets.each do |asset, opts|
-      DiscoursePluginRegistry.register_asset(asset, opts)
+    assets.each do |asset, opts, plugin_directory_name|
+      DiscoursePluginRegistry.register_asset(asset, opts, plugin_directory_name)
     end
   end
 
@@ -720,6 +727,12 @@ class Plugin::Instance
           puts msg
         end
       end
+    end
+  end
+
+  def allow_new_queued_post_payload_attribute(attribute_name)
+    reloadable_patch do
+      NewPostManager.add_plugin_payload_attribute(attribute_name)
     end
   end
 

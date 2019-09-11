@@ -38,6 +38,9 @@ class Reviewable < ActiveRecord::Base
 
   after_commit(on: :create) do
     DiscourseEvent.trigger(:reviewable_created, self)
+  end
+
+  after_commit(on: [:create, :update]) do
     Jobs.enqueue(:notify_reviewable, reviewable_id: self.id) if pending?
   end
 
@@ -476,6 +479,25 @@ class Reviewable < ActiveRecord::Base
       .group("date(reviewable_scores.created_at)")
       .order('date(reviewable_scores.created_at)')
       .count
+  end
+
+  def explain_score
+    DB.query(<<~SQL, reviewable_id: id)
+      SELECT rs.reviewable_id,
+        rs.user_id,
+        CASE WHEN (u.admin OR u.moderator) THEN 5.0 ELSE u.trust_level END AS trust_level_bonus,
+        us.flags_agreed,
+        us.flags_disagreed,
+        us.flags_ignored,
+        rs.score,
+        rs.take_action_bonus,
+        COALESCE(pat.score_bonus, 0.0) AS type_bonus
+      FROM reviewable_scores AS rs
+      INNER JOIN users AS u ON u.id = rs.user_id
+      LEFT OUTER JOIN user_stats AS us ON us.user_id = rs.user_id
+      LEFT OUTER JOIN post_action_types AS pat ON pat.id = rs.reviewable_score_type
+        WHERE rs.reviewable_id = :reviewable_id
+    SQL
   end
 
 protected

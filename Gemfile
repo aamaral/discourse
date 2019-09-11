@@ -47,7 +47,7 @@ gem 'redis-namespace'
 
 gem 'active_model_serializers', '~> 0.8.3'
 
-gem 'onebox', '1.9.7'
+gem 'onebox', '1.9.12'
 
 gem 'http_accept_language', '~>2.0.5', require: false
 
@@ -75,6 +75,7 @@ gem 'unf', require: false
 gem 'email_reply_trimmer', '~> 0.1'
 
 # Forked until https://github.com/toy/image_optim/pull/162 is merged
+# https://github.com/discourse/image_optim
 gem 'discourse_image_optim', require: 'image_optim'
 gem 'multi_json'
 gem 'mustache'
@@ -210,6 +211,7 @@ gem 'rubyzip', require: false
 gem 'sshkey', require: false
 
 gem 'rchardet', require: false
+gem 'lz4-ruby', require: false, platform: :mri
 
 if ENV["IMPORT"] == "1"
   gem 'mysql2'

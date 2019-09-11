@@ -191,9 +191,10 @@ basic:
   post_menu:
     client: true
     type: list
-    default: "like|share|flag|edit|bookmark|delete|admin|reply"
+    default: "read|like|share|flag|edit|bookmark|delete|admin|reply"
     allow_any: false
     choices:
+      - read
       - like
       - edit
       - flag
@@ -389,6 +390,16 @@ login:
     default: ""
     regex: "^[a-f0-9]+$"
     secret: true
+  enable_discord_logins:
+    default: false
+  discord_client_id:
+    default: ''
+  discord_secret:
+    default: ''
+    secret: true
+  discord_trusted_guilds:
+    default: ''
+    type: list
   enable_sso:
     client: true
     default: false
@@ -689,7 +700,7 @@ posting:
     type: category
     default: ""
   post_edit_time_limit:
-    default: 86400
+    default: 43200
     max: 525600
   edit_history_visible_to_public:
     client: true
@@ -845,6 +856,7 @@ posting:
     choices:
       - 4-spaces-indent
       - code-fences
+  embed_topics_list: false
   embed_truncate:
     default: true
   embed_support_markdown:
@@ -1060,7 +1072,7 @@ files:
     default: 50000
     max: 1024000
   theme_authorized_extensions:
-    default: "jpg|jpeg|png|woff|woff2|svg|eot|ttf|otf|gif"
+    default: "jpg|jpeg|png|woff|woff2|svg|eot|ttf|otf|gif|js"
     type: list
     list_type: compact
   authorized_extensions:
@@ -1115,7 +1127,9 @@ files:
     default: false
     client: true
     shadowed_by_global: true
-  s3_use_iam_profile: false
+  s3_use_iam_profile:
+    default: false
+    shadowed_by_global: true
   s3_access_key_id:
     default: ""
     secret: true
@@ -1928,6 +1942,14 @@ uncategorized:
   pwa_display_browser_regex:
     default: "iPad|iPhone"
     hidden: true
+
+  app_association_android:
+    default: ""
+    textarea: true
+
+  app_association_ios:
+    default: ""
+    textarea: true
 
   share_anonymized_statistics: true
 

@@ -17,6 +17,11 @@ class Users::OmniauthCallbacksController < ApplicationController
   # will not have a CSRF token, however the payload is all validated so its safe
   skip_before_action :verify_authenticity_token, only: :complete
 
+  def confirm_request
+    self.class.find_authenticator(params[:provider])
+    render locals: { hide_auth_buttons: true }
+  end
+
   def complete
     auth = request.env["omniauth.auth"]
     raise Discourse::NotFound unless request.env["omniauth.auth"]
@@ -85,8 +90,9 @@ class Users::OmniauthCallbacksController < ApplicationController
   end
 
   def failure
-    flash[:error] = I18n.t("login.omniauth_error")
-    render "failure"
+    error_key = params[:message].to_s.gsub(/[^\w-]/, "") || "generic"
+    flash[:error] = I18n.t("login.omniauth_error.#{error_key}", default: I18n.t("login.omniauth_error.generic"))
+    render 'failure'
   end
 
   def self.find_authenticator(name)
@@ -120,13 +126,25 @@ class Users::OmniauthCallbacksController < ApplicationController
       user.unstage
       user.save
 
+<<<<<<< HEAD
       # ensure there is an active email token
       unless EmailToken.where(email: user.email, confirmed: true).exists? ||
              user.email_tokens.active.where(email: user.email).exists?
         user.email_tokens.create!(email: user.email)
       end
+=======
+      if !user.active || !user.email_confirmed?
+        user.update!(password: SecureRandom.hex)
 
-      user.activate
+        # Ensure there is an active email token
+        unless EmailToken.where(email: user.email, confirmed: true).exists? ||
+          user.email_tokens.active.where(email: user.email).exists?
+          user.email_tokens.create!(email: user.email)
+        end
+>>>>>>> master
+
+        user.activate
+      end
       user.update!(registration_ip_address: request.remote_ip) if user.registration_ip_address.blank?
     end
     user.active = true

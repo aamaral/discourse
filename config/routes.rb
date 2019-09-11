@@ -107,7 +107,6 @@ Discourse::Application.routes.draw do
         delete "delete-others-with-same-ip" => "users#delete_other_accounts_with_same_ip"
         get "total-others-with-same-ip" => "users#total_other_accounts_with_same_ip"
         put "approve-bulk" => "users#approve_bulk"
-        delete "reject-bulk" => "users#reject_bulk"
       end
       delete "penalty_history", constraints: AdminConstraint.new
       put "suspend"
@@ -199,14 +198,6 @@ Discourse::Application.routes.draw do
     get "customize/embedding" => "embedding#show", constraints: AdminConstraint.new
     put "customize/embedding" => "embedding#update", constraints: AdminConstraint.new
 
-    get "flags" => "flags#index"
-    get "flags/:filter" => "flags#index", as: 'flags_filtered'
-    get "flags/topics/:topic_id" => "flags#index"
-    post "flags/agree/:id" => "flags#agree"
-    post "flags/disagree/:id" => "flags#disagree"
-    post "flags/defer/:id" => "flags#defer"
-
-    resources :flagged_topics, constraints: StaffConstraint.new
     resources :themes, constraints: AdminConstraint.new
 
     post "themes/import" => "themes#import"
@@ -333,6 +324,7 @@ Discourse::Application.routes.draw do
 
   get "review" => "reviewables#index" # For ember app
   get "review/:reviewable_id" => "reviewables#show", constraints: { reviewable_id: /\d+/ }
+  get "review/:reviewable_id/explain" => "reviewables#explain", constraints: { reviewable_id: /\d+/ }
   get "review/topics" => "reviewables#topics"
   get "review/settings" => "reviewables#settings"
   put "review/settings" => "reviewables#settings"
@@ -599,8 +591,9 @@ Discourse::Application.routes.draw do
     end
   end
 
-  match "/auth/:provider/callback", to: "users/omniauth_callbacks#complete", via: [:get, :post]
   match "/auth/failure", to: "users/omniauth_callbacks#failure", via: [:get, :post]
+  get "/auth/:provider", to: "users/omniauth_callbacks#confirm_request"
+  match "/auth/:provider/callback", to: "users/omniauth_callbacks#complete", via: [:get, :post]
   get "/associate/:token", to: "users/associate_accounts#connect_info", constraints: { token: /\h{32}/ }
   post "/associate/:token", to: "users/associate_accounts#connect", constraints: { token: /\h{32}/ }
 
@@ -613,6 +606,7 @@ Discourse::Application.routes.draw do
   get "excerpt" => "excerpt#show"
 
   resources :post_action_users
+  resources :post_readers, only: %i[index]
   resources :post_actions do
     collection do
       get "users"
@@ -710,6 +704,7 @@ Discourse::Application.routes.draw do
     end
   end
 
+  get 'embed/topics' => 'embed#topics'
   get 'embed/comments' => 'embed#comments'
   get 'embed/count' => 'embed#count'
   get 'embed/info' => 'embed#info'
@@ -769,9 +764,6 @@ Discourse::Application.routes.draw do
   get "/posts/:id/raw-email" => "posts#raw_email"
   get "raw/:topic_id(/:post_number)" => "posts#markdown_num"
 
-  resources :queued_posts, constraints: StaffConstraint.new
-  get 'queued-posts' => 'queued_posts#index'
-
   resources :invites
   post "invites/upload_csv" => "invites#upload_csv"
   post "invites/rescind-all" => "invites#rescind_all_invites"
@@ -821,6 +813,8 @@ Discourse::Application.routes.draw do
   get "offline.html" => "offline#index"
   get "manifest.webmanifest" => "metadata#manifest", as: :manifest
   get "manifest.json" => "metadata#manifest"
+  get ".well-known/assetlinks.json" => "metadata#app_association_android"
+  get "apple-app-site-association" => "metadata#app_association_ios", format: false
   get "opensearch" => "metadata#opensearch", constraints: { format: :xml }
 
   scope "/tags" do

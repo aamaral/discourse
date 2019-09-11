@@ -262,7 +262,7 @@ en:
 
     related_messages:
       title: "Related Messages"
-      see_all: "See <a href=\"%{path}\">all messages</a> from @%{username}..."
+      see_all: 'See <a href="%{path}">all messages</a> from @%{username}...'
 
     suggested_topics:
       title: "Suggested Topics"
@@ -352,6 +352,9 @@ en:
       close: "Dismiss this banner."
       edit: "Edit this banner >>"
 
+    pwa:
+      install_banner: "Do you want to <a href>install %{title} on this device?</a>"
+
     choose_topic:
       none_found: "No topics found."
       title:
@@ -367,6 +370,23 @@ en:
     review:
       order_by: "Order by"
       in_reply_to: "in reply to"
+      explain:
+        why: "explain why this item ended up in the queue"
+        title: "Reviewable Scoring"
+        formula: "Formula"
+        subtotal: "Subtotal"
+        total: "Total"
+        min_score_visibility: "Minimum Score for Visibility"
+        score_to_hide: "Score to Hide Post"
+        user_accuracy_bonus:
+          name: "user accuracy"
+          title: "Users whose flags have been historically agreed with are given a bonus."
+        trust_level_bonus:
+          name: "trust level"
+          title: "Reviewable items created by higher trust level users have a higher score."
+        type_bonus:
+          name: "type bonus"
+          title: "Certain reviewable types can be assigned a bonus by staff to make them a higher priority."
       claim_help:
         optional: "You can claim this item to prevent others from reviewing it."
         required: "You must claim items before you can review them."
@@ -651,6 +671,7 @@ en:
         remove_owner: "Remove as Owner"
         remove_owner_description: "Remove <b>%{username}</b> as an owner of this group"
         owner: "Owner"
+        forbidden: "You're not allowed to view the members."
       topics: "Topics"
       posts: "Posts"
       mentions: "Mentions"
@@ -802,9 +823,7 @@ en:
         perm_denied_btn: "Permission Denied"
         perm_denied_expl: "You denied permission for notifications. Allow notifications via your browser settings."
         disable: "Disable Notifications"
-        currently_enabled: ""
         enable: "Enable Notifications"
-        currently_disabled: ""
         each_browser_note: "Note: You have to change this setting on every browser you use."
         consent_prompt: "Do you want live notifications when people reply to your posts?"
       dismiss: "Dismiss"
@@ -1025,7 +1044,7 @@ en:
         cancel: "Cancel"
         not_connected: "(not connected)"
         confirm_modal_title: "Connect %{provider} Account"
-        confirm_description: 
+        confirm_description:
           account_specific: "Your %{provider} account '%{account_description}' will be used for authentication."
           generic: "Your %{provider} account will be used for authentication."
 
@@ -1467,6 +1486,10 @@ en:
         name: "GitHub"
         title: "with GitHub"
         message: "Authenticating with GitHub (make sure pop up blockers are not enabled)"
+      discord:
+        name: "Discord"
+        title: "with Discord"
+        message: "Authenticating with Discord"
     invites:
       accept_title: "Invitation"
       welcome_to: "Welcome to %{site_name}!"
@@ -1984,6 +2007,7 @@ en:
       group_request: "You need to request membership to the `{{name}}` group to see this topic"
       group_join: "You need join the `{{name}}` group to see this topic"
       group_request_sent: "Your group membership request has been sent. You will be informed when it's accepted."
+      unread_indicator: "No member has read the last post of this topic yet."
 
       # keys ending with _MF use message format, see https://meta.discourse.org/t/message-format-support-for-localization/7035 for details
       read_more_MF: "There {
@@ -2417,6 +2441,7 @@ en:
         reply: "begin composing a reply to this post"
         like: "like this post"
         has_liked: "you've liked this post"
+        read_indicator: "members who read this post"
         undo_like: "undo like"
         edit: "edit this post"
         edit_action: "Edit"
@@ -2474,6 +2499,7 @@ en:
           notify_user: "sent a message"
           bookmark: "bookmarked this"
           like: "liked this"
+          read: "read this"
           like_capped:
             one: "and {{count}} other liked this"
             other: "and {{count}} others liked this"
@@ -3210,6 +3236,10 @@ en:
               staff: "Group owners and staff"
               owners: "Group owners"
               description: "Admins can see all groups."
+            members_visibility_levels:
+              title: "Who can see this group's members?"
+              description: "Admins can see members of all groups."
+            publish_read_state: "On group messages publish group read state"
 
           membership:
             automatic: Automatic
@@ -3317,6 +3347,9 @@ en:
         reviewable_event:
           name: "Reviewable Event"
           details: "When a new item is ready for review and when its status is updated."
+        notification_event:
+          name: "Notification Event"
+          details: "When a user receives a notification in their feed."
         delivery_status:
           title: "Delivery Status"
           inactive: "Inactive"

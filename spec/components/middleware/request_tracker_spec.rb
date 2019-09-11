@@ -272,6 +272,33 @@ describe Middleware::RequestTracker do
       Middleware::RequestTracker.unregister_detailed_request_logger(logger)
     end
 
+    it "can report data from anon cache" do
+      cache = Middleware::AnonymousCache.new(app([200, {}, ["i am a thing"]]))
+      tracker = Middleware::RequestTracker.new(cache)
+
+      uri = "/path?#{SecureRandom.hex}"
+
+      request_params = {
+        "a" => "b",
+        "action" => "bob",
+        "controller" => "jane"
+      }
+
+      tracker.call(env("REQUEST_URI" => uri, "ANON_CACHE_DURATION" => 60, "action_dispatch.request.parameters" => request_params))
+      expect(@data[:cache]).to eq("skip")
+
+      tracker.call(env("REQUEST_URI" => uri, "ANON_CACHE_DURATION" => 60, "action_dispatch.request.parameters" => request_params))
+      expect(@data[:cache]).to eq("store")
+
+      tracker.call(env("REQUEST_URI" => uri, "ANON_CACHE_DURATION" => 60))
+      expect(@data[:cache]).to eq("true")
+
+      # not whitelisted
+      request_params.delete("a")
+
+      expect(@env["action_dispatch.request.parameters"]).to eq(request_params)
+    end
+
     it "can correctly log detailed data" do
 
       global_setting :enable_performance_http_headers, true

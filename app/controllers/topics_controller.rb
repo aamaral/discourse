@@ -175,7 +175,8 @@ class TopicsController < ApplicationController
       min_score: params[:min_score].to_i,
       min_replies: params[:min_replies].to_i,
       bypass_trust_level_score: params[:bypass_trust_level_score].to_i, # safe cause 0 means ignore
-      only_moderator_liked: params[:only_moderator_liked].to_s == "true"
+      only_moderator_liked: params[:only_moderator_liked].to_s == "true",
+      exclude_hidden: true
     }
 
     @topic_view = TopicView.new(params[:topic_id], current_user, opts)
@@ -320,8 +321,22 @@ class TopicsController < ApplicationController
           ).pluck("tags.name")
 
           invalid_tags = topic_tags - allowed_tags
+
+          # Do not raise an error on a topic's hidden tags when not modifying tags
+          if params[:tags].blank?
+            invalid_tags.each do |tag_name|
+              if DiscourseTagging.hidden_tag_names.include?(tag_name)
+                invalid_tags.delete(tag_name)
+              end
+            end
+          end
+
           if !invalid_tags.empty?
-            return render_json_error(I18n.t('category.errors.disallowed_topic_tags', tags: invalid_tags.join(", ")))
+            if (invalid_tags & DiscourseTagging.hidden_tag_names).present?
+              return render_json_error(I18n.t('category.errors.disallowed_tags_generic'))
+            else
+              return render_json_error(I18n.t('category.errors.disallowed_topic_tags', tags: invalid_tags.join(", ")))
+            end
           end
         end
       end
